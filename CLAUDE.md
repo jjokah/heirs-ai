@@ -9,8 +9,9 @@ HeirsAI is an AI-powered chatbot for **Heirs Insurance Group**, a digital-first 
 - **Icons:** lucide-react
 - **Charts:** recharts (installed, for analytics dashboard)
 - **Package Manager:** pnpm
-- **AI Model:** Anthropic Claude (preferred) or OpenAI GPT-4o-mini
-- **Approach:** Context-stuffing (knowledge base in system prompt, no vector DB)
+- **AI SDK:** Vercel AI SDK v6 (`ai`, `@ai-sdk/react`, `@ai-sdk/google`)
+- **AI Model:** Google Gemini 2.0 Flash (`gemini-2.0-flash`)
+- **Approach:** Context-stuffing (condensed knowledge base in system prompt, no vector DB)
 
 ## Commands
 - `pnpm dev` - Start dev server (uses Turbopack)
@@ -23,7 +24,7 @@ app/
   layout.tsx          # Root layout (metadata, fonts)
   page.tsx            # Main chat interface (all UI logic currently here)
   globals.css         # Global styles
-  api/chat/           # TODO: AI chat API route
+  api/chat/route.ts   # Gemini streaming chat API (context-stuffed knowledge base)
 components/
   ui/                 # shadcn/ui components (button, input, card, sheet, etc.)
   theme-provider.tsx  # Dark mode theme provider
@@ -35,22 +36,36 @@ lib/
 public/               # Static assets
 HEIRS_KNOWLEDGE_BASE.json  # Scraped Heirs Insurance website data
 heirs-chatbot-guide.md     # Complete build guide and reference
+.env.example               # Environment variable template
 ```
 
-## Current State
-- Chat UI is built with sidebar, quick actions, message bubbles, typing indicator
-- Responses are **hardcoded/simulated** (setTimeout with keyword matching)
-- No AI backend connected yet
+## Environment Variables
+- `GOOGLE_GENERATIVE_AI_API_KEY` - Google Gemini API key (get at https://aistudio.google.com/apikey)
+- Copy `.env.example` to `.env.local` and fill in values
+
+## Current State (Phase 1 Complete)
+- Chat UI with sidebar, quick actions, message bubbles, typing indicator
+- **AI backend connected** - Gemini 2.0 Flash via Vercel AI SDK streaming
+- Condensed knowledge base embedded in system prompt (`app/api/chat/route.ts`)
+- Frontend uses `useChat` hook from `@ai-sdk/react` (v6 API: `sendMessage`, `parts`-based messages)
+- Quick action buttons send contextual prompts to AI
 - No product recommender or claims assistant components yet
 - No analytics dashboard yet
 
+## AI SDK v6 Notes
+- `useChat` from `@ai-sdk/react` — NOT `ai/react` (v6 breaking change)
+- Messages use `parts` array (not `content` string): `{ type: 'text', text: '...' }`
+- Use `sendMessage({ text: '...' })` instead of old `append()`
+- Status: `status === 'streaming' | 'submitted'` instead of `isLoading`
+- `streamText()` in API route returns `result.toDataStreamResponse()`
+
 ## Build Roadmap
 
-### Phase 1: AI Backend (Priority)
-1. Create `/app/api/chat/route.ts` - API route that sends messages to Claude/OpenAI
-2. Use context-stuffing: load `HEIRS_KNOWLEDGE_BASE.json` into the system prompt
-3. Wire frontend `handleSendMessage` to call `/api/chat` instead of using setTimeout
-4. Add streaming support for real-time response display
+### Phase 1: AI Backend - DONE
+1. ~~Create `/app/api/chat/route.ts`~~ - Gemini streaming API with knowledge base
+2. ~~Context-stuffing~~ - Condensed knowledge base in system prompt
+3. ~~Wire frontend~~ - `useChat` hook with streaming responses
+4. ~~Streaming support~~ - Real-time token-by-token display
 
 ### Phase 2: Smart Features
 5. Build `ProductRecommender` component - interactive questionnaire (who/what/results)
