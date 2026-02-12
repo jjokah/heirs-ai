@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useEffect, useState } from 'react'
+import ReactMarkdown from 'react-markdown'
 import { useChat } from '@ai-sdk/react'
 import type { UIMessage } from 'ai'
 import { Button } from '@/components/ui/button'
@@ -215,7 +216,9 @@ export default function HeirsAIChat() {
                         : 'bg-gray-100 dark:bg-slate-800 text-gray-900 dark:text-white'
                     }`}
                   >
-                    <p className="text-sm whitespace-pre-wrap">{getMessageText(message)}</p>
+                    <div className="text-sm prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 prose-headings:my-2">
+                      <ReactMarkdown>{getMessageText(message)}</ReactMarkdown>
+                    </div>
                   </div>
                 </div>
               </div>
