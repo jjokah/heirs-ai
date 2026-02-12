@@ -43,13 +43,15 @@ heirs-chatbot-guide.md     # Complete build guide and reference
 - `GOOGLE_GENERATIVE_AI_API_KEY` - Google Gemini API key (get at https://aistudio.google.com/apikey)
 - Copy `.env.example` to `.env.local` and fill in values
 
-## Current State (Phase 1 Complete)
+## Current State (Phase 2 Complete)
 - Chat UI with sidebar, quick actions, message bubbles, typing indicator
 - **AI backend connected** - Gemini 2.0 Flash via Vercel AI SDK streaming
 - Condensed knowledge base embedded in system prompt (`app/api/chat/route.ts`)
 - Frontend uses `useChat` hook from `@ai-sdk/react` (v6 API: `sendMessage`, `parts`-based messages)
-- Quick action buttons send contextual prompts to AI
-- No product recommender or claims assistant components yet
+- Quick action buttons trigger appropriate interactive flows
+- **ProductRecommender** - 3-step inline questionnaire (category → sub-option → results with pricing/CTAs/comparison)
+- **ClaimsAssistant** - 5-step guided claims form (type → details → upload → review → confirmation)
+- **Intent detection** - Keyword-based routing auto-shows recommender or claims flow
 - No analytics dashboard yet
 
 ## AI SDK v6 Notes
@@ -67,11 +69,11 @@ heirs-chatbot-guide.md     # Complete build guide and reference
 3. ~~Wire frontend~~ - `useChat` hook with streaming responses
 4. ~~Streaming support~~ - Real-time token-by-token display
 
-### Phase 2: Smart Features
-5. Build `ProductRecommender` component - interactive questionnaire (who/what/results)
-6. Build `ClaimsAssistant` component - multi-step guided claims form
-7. Add intent detection: route to recommender/claims based on user message
-8. Make quick-action buttons trigger appropriate flows
+### Phase 2: Smart Features - DONE
+5. ~~Build `ProductRecommender` component~~ - 3-step interactive questionnaire (who/what/results)
+6. ~~Build `ClaimsAssistant` component~~ - 5-step guided claims form
+7. ~~Add intent detection~~ - route to recommender/claims based on user message keywords
+8. ~~Make quick-action buttons trigger appropriate flows~~
 
 ### Phase 3: Polish & Demo
 9. Build analytics dashboard at `/app/dashboard/page.tsx` with mock metrics

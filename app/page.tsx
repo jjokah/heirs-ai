@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useState, useCallback } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { useChat } from '@ai-sdk/react'
 import type { UIMessage } from 'ai'
@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { ProductRecommender } from '@/components/product-recommender'
+import { ClaimsAssistant } from '@/components/claims-assistant'
 import {
   Menu,
   Plus,
@@ -29,6 +31,32 @@ function getMessageText(message: { parts: Array<{ type: string; text?: string }>
     .join('')
 }
 
+// ── Intent detection ──────────────────────────────────────────────────
+type ActiveFlow = 'none' | 'product' | 'claims'
+
+const PRODUCT_KEYWORDS = [
+  'recommend', 'find product', 'find insurance', 'insurance for',
+  'what do you offer', 'which plan', 'which product', 'compare',
+  'suggest', 'motor insurance', 'travel insurance', 'life insurance',
+  'home insurance', 'what insurance', 'help me choose', 'find products',
+]
+
+const CLAIMS_KEYWORDS = [
+  'file a claim', 'make a claim', 'claim', 'incident', 'accident',
+  'damage', 'report', 'stolen', 'theft', 'lost', 'file claim',
+  'submit claim', 'claims process',
+]
+
+function detectIntent(text: string): ActiveFlow {
+  const lower = text.toLowerCase()
+  // Claims intent (check first — more specific)
+  if (CLAIMS_KEYWORDS.some((kw) => lower.includes(kw))) return 'claims'
+  // Product intent
+  if (PRODUCT_KEYWORDS.some((kw) => lower.includes(kw))) return 'product'
+  return 'none'
+}
+
+// ══════════════════════════════════════════════════════════════════════
 export default function HeirsAIChat() {
   const initialMessages: UIMessage[] = [
     {
@@ -45,6 +73,7 @@ export default function HeirsAIChat() {
   const [inputValue, setInputValue] = useState('')
   const [conversations] = useState(['Today'])
   const [isMobileOpen, setIsMobileOpen] = useState(false)
+  const [activeFlow, setActiveFlow] = useState<ActiveFlow>('none')
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const isLoading = status === 'streaming' || status === 'submitted'
@@ -53,28 +82,59 @@ export default function HeirsAIChat() {
     if (scrollRef.current) {
       scrollRef.current.scrollIntoView({ behavior: 'smooth' })
     }
-  }, [messages])
+  }, [messages, activeFlow])
 
-  const handleSubmit = (e?: React.FormEvent) => {
-    e?.preventDefault()
-    if (!inputValue.trim() || isLoading) return
-    sendMessage({ text: inputValue })
-    setInputValue('')
-  }
+  // ── Intent detection on new user messages ──────────────────────────
+  const lastUserMsg = [...messages].reverse().find((m) => m.role === 'user')
+  const [lastDetectedId, setLastDetectedId] = useState<string | null>(null)
 
-  const handleQuickAction = (message: string) => {
-    if (isLoading) return
-    sendMessage({ text: message })
-  }
+  useEffect(() => {
+    if (lastUserMsg && lastUserMsg.id !== lastDetectedId) {
+      setLastDetectedId(lastUserMsg.id)
+      const text = getMessageText(lastUserMsg)
+      const intent = detectIntent(text)
+      if (intent !== 'none') {
+        setActiveFlow(intent)
+      }
+    }
+  }, [lastUserMsg, lastDetectedId])
+
+  // ── Handlers ──────────────────────────────────────────────────────
+  const handleSubmit = useCallback(
+    (e?: React.FormEvent) => {
+      e?.preventDefault()
+      if (!inputValue.trim() || isLoading) return
+      sendMessage({ text: inputValue })
+      setInputValue('')
+    },
+    [inputValue, isLoading, sendMessage],
+  )
+
+  const handleQuickAction = useCallback(
+    (action: string, flow?: ActiveFlow) => {
+      if (isLoading) return
+      if (flow && flow !== 'none') {
+        setActiveFlow(flow)
+      }
+      sendMessage({ text: action })
+    },
+    [isLoading, sendMessage],
+  )
 
   const resetChat = () => {
     setMessages(initialMessages)
+    setActiveFlow('none')
+    setLastDetectedId(null)
   }
 
+  const handleFlowComplete = useCallback(() => {
+    setActiveFlow('none')
+  }, [])
+
   const quickActions = [
-    { label: 'Get a Quote', icon: Calculator, message: 'I want to get an insurance quote. What options do you have?' },
-    { label: 'File a Claim', icon: FileText, message: 'I need to file an insurance claim. How do I go about it?' },
-    { label: 'Find Products', icon: Search, message: 'What insurance products do you offer?' },
+    { label: 'Get a Quote', icon: Calculator, message: 'I want to get an insurance quote. What options do you have?', flow: 'product' as ActiveFlow },
+    { label: 'File a Claim', icon: FileText, message: 'I need to file an insurance claim. How do I go about it?', flow: 'claims' as ActiveFlow },
+    { label: 'Find Products', icon: Search, message: 'Help me find the right insurance product for my needs.', flow: 'product' as ActiveFlow },
     { label: 'Talk to Agent', icon: Headphones, message: 'I would like to speak with a human agent.' },
   ]
 
@@ -178,7 +238,7 @@ export default function HeirsAIChat() {
           {quickActions.map((action, idx) => (
             <button
               key={idx}
-              onClick={() => handleQuickAction(action.message)}
+              onClick={() => handleQuickAction(action.message, action.flow)}
               disabled={isLoading}
               className="flex flex-col items-center gap-2 px-4 py-3 rounded-lg border-2 border-red-200 dark:border-red-900 hover:bg-red-50 dark:hover:bg-slate-800 flex-shrink-0 transition-colors disabled:opacity-50"
             >
@@ -215,8 +275,8 @@ export default function HeirsAIChat() {
                       }`}
                   >
                     <div className={`text-sm prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 prose-headings:my-2 ${message.role === 'user'
-                        ? 'prose-invert text-white prose-p:text-white prose-headings:text-white prose-strong:text-white prose-li:text-white'
-                        : 'dark:prose-invert'
+                      ? 'prose-invert text-white prose-p:text-white prose-headings:text-white prose-strong:text-white prose-li:text-white'
+                      : 'dark:prose-invert'
                       }`}>
                       <ReactMarkdown>{getMessageText(message)}</ReactMarkdown>
                     </div>
@@ -236,6 +296,29 @@ export default function HeirsAIChat() {
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* ── Inline interactive components ──────────────── */}
+            {activeFlow === 'product' && (
+              <div className="flex justify-start">
+                <div className="flex gap-3 max-w-xs md:max-w-md lg:max-w-lg">
+                  <div className="w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center flex-shrink-0 font-bold text-sm">
+                    H
+                  </div>
+                  <ProductRecommender onComplete={handleFlowComplete} />
+                </div>
+              </div>
+            )}
+
+            {activeFlow === 'claims' && (
+              <div className="flex justify-start">
+                <div className="flex gap-3 max-w-xs md:max-w-md lg:max-w-lg">
+                  <div className="w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center flex-shrink-0 font-bold text-sm">
+                    H
+                  </div>
+                  <ClaimsAssistant onComplete={handleFlowComplete} />
                 </div>
               </div>
             )}
