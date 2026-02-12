@@ -199,9 +199,8 @@ export default function HeirsAIChat() {
                 className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`flex gap-3 ${
-                    message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
-                  } max-w-xs md:max-w-md lg:max-w-lg`}
+                  className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
+                    } max-w-xs md:max-w-md lg:max-w-lg`}
                 >
                   {message.role === 'assistant' && (
                     <div className="w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center flex-shrink-0 font-bold text-sm">
@@ -210,13 +209,15 @@ export default function HeirsAIChat() {
                   )}
 
                   <div
-                    className={`rounded-lg px-4 py-3 ${
-                      message.role === 'user'
-                        ? 'bg-red-600 text-white'
-                        : 'bg-gray-100 dark:bg-slate-800 text-gray-900 dark:text-white'
-                    }`}
+                    className={`rounded-lg px-4 py-3 ${message.role === 'user'
+                      ? 'bg-red-600 text-white'
+                      : 'bg-gray-100 dark:bg-slate-800 text-gray-900 dark:text-white'
+                      }`}
                   >
-                    <div className="text-sm prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 prose-headings:my-2">
+                    <div className={`text-sm prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 prose-headings:my-2 ${message.role === 'user'
+                        ? 'prose-invert text-white prose-p:text-white prose-headings:text-white prose-strong:text-white prose-li:text-white'
+                        : 'dark:prose-invert'
+                      }`}>
                       <ReactMarkdown>{getMessageText(message)}</ReactMarkdown>
                     </div>
                   </div>
