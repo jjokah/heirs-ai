@@ -235,7 +235,7 @@ export function ClaimsAssistant({ onComplete }: ClaimsAssistantProps) {
                             </p>
                         </div>
 
-                        <div className="flex gap-3 pt-1">
+                        <div className="flex flex-col sm:flex-row gap-3 pt-1">
                             <Button
                                 variant="outline"
                                 className="dark:border-slate-700"
@@ -315,7 +315,7 @@ export function ClaimsAssistant({ onComplete }: ClaimsAssistantProps) {
                             </div>
                         )}
 
-                        <div className="flex gap-3 pt-1">
+                        <div className="flex flex-col sm:flex-row gap-3 pt-1">
                             <Button
                                 variant="outline"
                                 className="dark:border-slate-700"
@@ -426,7 +426,7 @@ export function ClaimsAssistant({ onComplete }: ClaimsAssistantProps) {
                             </Label>
                         </div>
 
-                        <div className="flex gap-3 pt-1">
+                        <div className="flex flex-col sm:flex-row gap-3 pt-1">
                             <Button
                                 variant="outline"
                                 className="dark:border-slate-700"

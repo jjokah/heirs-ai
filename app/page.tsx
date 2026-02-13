@@ -19,7 +19,9 @@ import {
   FileText,
   Search,
   Headphones,
-  Dot
+  Dot,
+  LayoutDashboard,
+  MessageSquare
 } from 'lucide-react'
 
 const WELCOME_MESSAGE = "Hello! I'm HeirsAI, your intelligent insurance assistant. I can help you find the right insurance product, file claims, get quotes, or answer any questions about Heirs Insurance Group. How can I help you today?"
@@ -155,30 +157,42 @@ export default function HeirsAIChat() {
           </div>
         </div>
 
-        {/* New Chat Button */}
-        <div className="p-4">
-          <Button
-            onClick={resetChat}
-            className="w-full bg-red-600 hover:bg-red-700 text-white"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            New Chat
-          </Button>
-        </div>
+        {/* Navigation */}
+        <div className="flex-1 py-4">
+          <div className="space-y-1 px-2">
+            <a href="/" className="flex items-center gap-3 px-3 py-2 text-sm font-medium bg-red-100 dark:bg-slate-800 text-red-700 dark:text-red-400 rounded-md">
+              <MessageSquare className="w-5 h-5" />
+              Chat
+            </a>
+            <a href="/dashboard" className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-red-100 dark:hover:bg-slate-800 transition-colors">
+              <LayoutDashboard className="w-5 h-5" />
+              Dashboard
+            </a>
+          </div>
 
-        {/* Conversation History */}
-        <div className="flex-1 px-4 py-2">
-          <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase mb-3">Conversations</div>
-          <ScrollArea className="h-full">
-            {conversations.map((conv, idx) => (
-              <div
-                key={idx}
-                className="p-3 mb-2 rounded-lg bg-white dark:bg-slate-800 cursor-pointer hover:bg-red-100 dark:hover:bg-slate-700 text-sm text-gray-700 dark:text-gray-300 truncate"
+          <div className="mt-8 px-4">
+            <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase mb-3">Recent</div>
+            <ScrollArea className="h-[200px]">
+              {conversations.map((conv, idx) => (
+                <div
+                  key={idx}
+                  className="p-3 mb-2 rounded-lg bg-white dark:bg-slate-800 cursor-pointer hover:bg-red-100 dark:hover:bg-slate-700 text-sm text-gray-700 dark:text-gray-300 truncate"
+                >
+                  {conv}
+                </div>
+              ))}
+            </ScrollArea>
+            <div className="mt-4">
+              <Button
+                onClick={resetChat}
+                className="w-full bg-red-600 hover:bg-red-700 text-white"
+                size="sm"
               >
-                {conv}
-              </div>
-            ))}
-          </ScrollArea>
+                <Plus className="w-4 h-4 mr-2" />
+                New Chat
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 
